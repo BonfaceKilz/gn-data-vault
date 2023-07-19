@@ -26,7 +26,16 @@
             (reverse lines) ; Return the lines in reverse order
             (loop (cons line lines) (read-line input-port)))))))
 
+;;add dfaulta code below
+(define (parse-genofile-labels line)
+  (if (string-starts-with? line "@")
+      line
+      #f))
 
+(define (parse-genofile-headers line)
+  (if (string-starts-with? line "#")
+    line
+    #f))
 
 
 
