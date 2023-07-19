@@ -38,4 +38,13 @@
     #f))
 
 
+(define (read-file-line-by-line filename parse-genofile-function)
+  (with-input-from-file filename
+    (lambda (input-port)
+      (let loop ((lines '())
+                 (line (read-line input-port)))
+        (if (eof-object? line)
+            (reverse lines) ; Return the lines in reverse order
+            (loop (cons (parse-genofile-function line) lines) (read-line input-port)))))))
+
 
