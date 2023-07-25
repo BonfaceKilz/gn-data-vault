@@ -3,17 +3,12 @@
 (use-modules (ice-9 rdelim))
 
 
-
 (define (string-starts-with? str prefix)
   (define prefix-length (string-length prefix)) 
   (and (>= (string-length  str) prefix-length)
     (string=? (substring str 0 prefix-length) prefix)
     )
   )
-
-(define (hashtable->alist ht)
-  (let-values (((ks vs) (hashtable-entries ht)))
-    (vector->list (vector-map cons ks vs))))
 
 
 
@@ -38,6 +33,9 @@
     #f))
 
 
+
+
+
 (define (read-file-line-by-line filename parse-genofile-function)
   (with-input-from-file filename
     (lambda (input-port)
@@ -53,38 +51,75 @@
   (define marker-row (map string-trim (string-split line "\t")))
 
 
-  (define geno-table
-    `((,(hash-ref geno-obj "mat") . -1)
-      (,(hash-ref geno-obj "pat") . 1)
-      (,(hash-ref geno-obj "het") . 0)
-      (,(hash-ref geno-obj "unk") . "U")))
-  (define start-pos (if (hash-ref geno-obj "Mbmap") 4 3))
-  (when (> (length parlist) 0)
-    (set! start-pos (+ start-pos 2)))
 
-  (define alleles (drop marker-row start-pos))
-  (define genotype
-    (map (lambda (allele)
-           (if (hash-has-key? geno-table allele)
-               (hash-ref geno-table allele)
-               "U"))
-         alleles))
-  (when (> (length parlist) 0)
-    (set! genotype (cons -1 (cons 1 genotype))))
-  (define cm-val
-    (with-handlers ((condition? (lambda (_) #f)))
-      (let ((cm-column (hash-ref geno-obj "cm_column"))
-            (mb-column (hash-ref geno-obj "mb_column")))
+(define geno-table
+  `((,(hash-ref geno-obj "mat") . -1)
+    (,(hash-ref geno-obj "pat") . 1)
+    (,(hash-ref geno-obj "het") . 0)
+    (,(hash-ref geno-obj "unk") . "U")))
+
+(define start-pos (if (hash-ref geno-obj "Mbmap") 4 3))
+
+(when (> (length parlist) 0)
+  (set! start-pos (+ start-pos 2)))
+
+(define alleles (drop marker-row start-pos))
+
+(define genotype
+  (map (lambda (allele)
+         (if (assoc allele geno-table)
+             (cdr (assoc allele geno-table))
+             "U"))
+       alleles))
+
+(when (> (length parlist) 0)
+  (set! genotype (cons -1 (cons 1 genotype))))
+
+(define cm-val
+  (let ((cm-column (hash-ref geno-obj "cm_column"))
+        (mb-column (hash-ref geno-obj "mb_column")))
+    (let ((result (with-exception-handler
+                    (lambda (key args) #f)
+                    (lambda ()
+                      (if (hash-ref geno-obj "Mbmap")
+                          (string->number mb-column)
+                          (string->number cm-column))))))
+      (if (condition? result)
+          #f
+          result))))
+(list
+  (cons "chr" (list-ref marker-row 0))
+  (cons "name" (list-ref marker-row 1))
+  (cons "cM" cm-val)
+  (cons "Mb"
         (if (hash-ref geno-obj "Mbmap")
-            (string->number mb-column)
-            (string->number cm-column)))))
-  (list
-    (cons "chr" (list-ref marker-row 0))
-    (cons "name" (list-ref marker-row 1))
-    (cons "cM" cm-val)
-    (cons "Mb"
-          (if (hash-ref geno-obj "Mbmap")
-              (string->number (hash-ref geno-obj "mb_column"))
-              #f))
-    (cons "genotype" genotype)))
+            (let ((mb-column (hash-ref geno-obj "mb_column")))
+              (let ((result (with-exception-handler
+                              (lambda (key args) #f)
+                              (lambda ()
+                                (string->number mb-column)))))
+                (if (condition? result)
+                    #f
+                    result)))
+            #f))
+  (cons "genotype" genotype))
 
+
+(define (parse-label line)
+  (let* ((label-value (map string-trim (string-split (substring line 1) ":")))
+         (label (car label-value))
+         (value (cadr label-value)))
+    (if (not (member label '("name" "filler" "type" "mat" "pat" "het" "unk")))
+        #f
+        (if (equal? label "name")
+            '(group . value)
+            (cons label value)))))
+
+(define (parse-genotype-labels lines)
+  (define acceptable-labels '("name" "filler" "type" "mat" "pat" "het" "unk"))
+  (define (parse-line line)
+    (parse-label line))
+  (apply append
+         (map (lambda (item)
+                (if item (list item) '()))
+              (map parse-line lines))))
