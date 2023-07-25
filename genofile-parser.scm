@@ -1,7 +1,7 @@
 
-
-(use-modules (ice-9 rdelim))
-
+(use-modules (ice-9 ftw)
+             (ice-9 rdelim)
+             (srfi srfi-1))
 
 (define (string-starts-with? str prefix)
   (define prefix-length (string-length prefix)) 
@@ -123,3 +123,17 @@
          (map (lambda (item)
                 (if item (list item) '()))
               (map parse-line lines))))
+
+
+
+(define (parse-genotype-file filename parlist)
+  "Parse the provided genotype file into a usable Guile data structure."
+  (let* ((lines (file->lines filename))
+         (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
+         (contents (filter (lambda (line) (not (string=? "" (string-trim line))))) lines-without-comments)
+         (labels (parse-genotype-labels (filter (lambda (line) (string-prefix? "@" (string-trim line))) contents)))
+         (data-lines (filter (lambda (line) (not (string-prefix? "@" (string-trim line)))) contents))
+         (header (parse-genotype-header (car data-lines) parlist))
+         (geno-obj (apply hash labels header))
+         (markers (map (lambda (line) (parse-genotype-marker line geno-obj parlist)) (cdr data-lines))))
+    geno-obj))
