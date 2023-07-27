@@ -138,9 +138,13 @@
               #f))
     (cons "genotype" genotype)))
 
-(define (parse-genotype-file filename)
-(let* ((a 1) (b a))
-   b)
+
+
+(define-public (parse-genotype-file filename)
+(let* ((lines (read-file-line-by-line filename)) 
+  (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
+  )
+   lines) 
   )
 
 #|

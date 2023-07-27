@@ -66,4 +66,8 @@
                                        '()))
 (test-equal "Test parsing genofile markers" expected-results results)
 
+
+
+(test-equal "test file reading" (parse-genotype-file "name.txt") '())
+
 (test-end "genofile parser")
