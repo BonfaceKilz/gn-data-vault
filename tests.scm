@@ -4,12 +4,9 @@
 
 (test-begin "genofile parser")
 
-;;string starts with
-;;read-file-line-by-line filename parse-genofile-functio
 (test-equal "test file reading "
   (list "this is a test" "second line" "third line" "@name:kabui" "@type:bxd" "#test:name")
   (read-file-line-by-line "name.txt"))
-
 
 (test-equal "test parser for labels" (list "@this is a test" #f "@third line")
             (genofiles-line-parsers (list "@this is a test" "second line" "@third line")
@@ -38,20 +35,18 @@
 (hash-set! my-hash  "T" "dsad")
 (hash-set! my-hash  "het" 2)
 (hash-set! my-hash "C"  12)
-(hash-set! my-hash  "unk" "test")
+hash-set! my-hash  "unk" "test"
 (hash-set! my-hash  "N"  "q")
 
-(define  expected-results
-  `(("chr" . "chr1")
-    ("name" . "Marker1")
-    ("cM" . #f)
-    ("Mb" . #f)
-    ("genotype" "U" "U" "U")))
 
-(define results (parse-genotype-marker "chr1\tMarker1\tA\tA\tC\tT"
-				       my-hash
-				       '()))
-(test-equal "Test parsing genofile markers" expected-results results)
+(test-equal "Test parsing genofile markers" `((chr . "chr1")
+                                              (name . "Marker1")
+                                              (cM . #f)
+                                              (Mb . #f)
+                                              (genotype . ("U" "U" "U")))
+            (parse-genotype-marker "chr1\tMarker1\tA\tA\tC\tT"
+                                   my-hash
+                                   '()))
 
 (test-equal "test genofile parsing " (parse-genotype-file "name.txt") (list "this is a test" "second line" "third line" "@name:kabui" "@type:bxd" "#test:name"))
 
