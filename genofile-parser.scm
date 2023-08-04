@@ -45,7 +45,6 @@
                 (if item (list item) '()))
               (map parse-line lines))))
 
-
 ;; file readers
 (define-public (read-file-line-by-line filename)
   (call-with-input-file filename
@@ -53,7 +52,7 @@
       (let loop ((lines '())
                  (line (read-line input-port)))
         (if (eof-object? line)
-            (reverse lines) ; Return the lines in reverse order
+            (reverse lines)	   ; Return the lines in reverse order
             (loop (cons line lines) (read-line input-port)))))))
 
 (define-public (read-file-line-by-lines filename parse-genofile-function)
@@ -121,27 +120,7 @@
              #f))
    (cons "genotype" genotype)))
 
-
-
 (define-public (parse-genotype-file filename)
   (let* ((lines (read-file-line-by-line filename))
-	 (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
-	 )
-    lines)
-  )
-
-#|
-(define (parse-genotype-file filename parlist)
-"Parse the provided genotype file into a usable Guile data structure."
-(let* ((lines (file->lines filename))
-(lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
-(contents (filter (lambda (line) (not (string=? "" (string-trim line))))) lines-without-comments)
-(labels (parse-genotype-labels (filter (lambda (line) (string-prefix? "@" (string-trim line))) contents)))
-(data-lines (filter (lambda (line) (not (string-prefix? "@" (string-trim line)))) contents))
-(header (parse-genotype-header (car data-lines) parlist))
-(geno-obj (apply hash labels header))
-(markers (map (lambda (line) (parse-genotype-marker line geno-obj parlist)) (cdr data-lines))))
-geno-obj))
-
-
-|#
+	 (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines)))
+    lines))
