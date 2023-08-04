@@ -15,14 +15,10 @@
   (map parser-type lines))
 
 (define-public (parse-genofile-labels line)
-  (if (string-starts-with? line "@")
-      line
-      #f))
+  (if (string-prefix? "@" line) line #f))
 
 (define-public (parse-genofile-headers line)
-  (if (string-starts-with? line "#")
-      line
-      #f))
+  (if (string-prefix? "#" line) line #f))
 
 (define-public (parse-label line)
   (let* ((label-value (map string-trim (string-split (substring line 1 (string-length line)) #\:)))
