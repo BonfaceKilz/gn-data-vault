@@ -1,22 +1,19 @@
-
-
 (define-module (genofile-parser))
+
 (use-modules (ice-9 ftw)
              (ice-9 rdelim)
              (srfi srfi-1))
 
 ;;util methods
 (define-public (string-starts-with? str prefix)
-  (define prefix-length (string-length prefix)) 
-  (and (>= (string-length  str) prefix-length)
-    (string=? (substring str 0 prefix-length) prefix)
-    )
-  )
+  (define prefix-length (string-length prefix))
+  (and (>= (string-length str) prefix-length)
+       (string=? (substring str 0 prefix-length) prefix)))
+
 ;; genofile line parsers
 
 (define-public (genofiles-line-parsers lines parser-type)
-    (map parser-type lines))
-
+  (map parser-type lines))
 
 (define-public (parse-genofile-labels line)
   (if (string-starts-with? line "@")
@@ -25,8 +22,8 @@
 
 (define-public (parse-genofile-headers line)
   (if (string-starts-with? line "#")
-    line
-    #f))
+      line
+      #f))
 
 (define-public (parse-label line)
   (let* ((label-value (map string-trim (string-split (substring line 1 (string-length line)) #\:)))
@@ -49,10 +46,7 @@
               (map parse-line lines))))
 
 
-;;file readers
-
-
-
+;; file readers
 (define-public (read-file-line-by-line filename)
   (call-with-input-file filename
     (lambda (input-port)
@@ -62,9 +56,6 @@
             (reverse lines) ; Return the lines in reverse order
             (loop (cons line lines) (read-line input-port)))))))
 
-
-
-
 (define-public (read-file-line-by-lines filename parse-genofile-function)
   (with-input-from-file filename
     (lambda (input-port)
@@ -73,12 +64,6 @@
         (if (eof-object? line)
             (reverse lines) ; Return the lines in reverse order
             (loop (cons (parse-genofile-function line) lines) (read-line input-port)))))))
-
-
-
-
-
-
 
 (define-public (parse-genotype-marker line geno-obj parlist)
   (define marker-row (map string-trim (string-split line #\tab)))
@@ -106,63 +91,57 @@
   (when (> (length parlist) 0)
     (set! genotype (cons -1 (cons 1 genotype))))
 
+  ;;(define cm-val 12.1)  ;;for debug purpose only
 
-;;(define cm-val 12.1)  ;;for debug purpose only
-
-;;parsing
-(define cm-val
-  (catch 'exception
-    (lambda ()
-      (let ((cm-column (string->number (hash-ref geno-obj "cm_column" "test"))))
-        cm-column))
-    (lambda (condition)
-      (if (and (hash-ref geno-obj "Mbmap") (hash-ref geno-obj "mb_column"))
-          (let ((mb-column (string->number (hash-ref geno-obj "mb_column"))))
-            mb-column)
-          0))))
-
+  ;;parsing
+  (define cm-val
+    (catch 'exception
+      (lambda ()
+	(let ((cm-column (string->number (hash-ref geno-obj "cm_column" "test"))))
+          cm-column))
+      (lambda (condition)
+	(if (and (hash-ref geno-obj "Mbmap") (hash-ref geno-obj "mb_column"))
+            (let ((mb-column (string->number (hash-ref geno-obj "mb_column"))))
+              mb-column)
+            0))))
   (list
-    (cons "chr" (list-ref marker-row 0))
-    (cons "name" (list-ref marker-row 1))
-    (cons "cM" cm-val)
-    (cons "Mb"
-          (if (hash-ref geno-obj "Mbmap")
-              (let ((mb-column (hash-ref geno-obj "mb_column")))
-                (let ((result (with-exception-handler
-                                (lambda (key args) #f)
-                                (lambda ()
-                                  (string->number mb-column)))))
-                  (if (not (number? result))
-                      result
-                      #f)))
-              #f))
-    (cons "genotype" genotype)))
+   (cons "chr" (list-ref marker-row 0))
+   (cons "name" (list-ref marker-row 1))
+   (cons "cM" cm-val)
+   (cons "Mb"
+         (if (hash-ref geno-obj "Mbmap")
+             (let ((mb-column (hash-ref geno-obj "mb_column")))
+               (let ((result (with-exception-handler
+                                 (lambda (key args) #f)
+                               (lambda ()
+                                 (string->number mb-column)))))
+                 (if (not (number? result))
+                     result
+                     #f)))
+             #f))
+   (cons "genotype" genotype)))
 
 
 
 (define-public (parse-genotype-file filename)
-(let* ((lines (read-file-line-by-line filename)) 
-  (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
-  )
-   lines) 
+  (let* ((lines (read-file-line-by-line filename))
+	 (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
+	 )
+    lines)
   )
 
 #|
 (define (parse-genotype-file filename parlist)
-  "Parse the provided genotype file into a usable Guile data structure."
-  (let* ((lines (file->lines filename))
-         (lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
-         (contents (filter (lambda (line) (not (string=? "" (string-trim line))))) lines-without-comments)
-         (labels (parse-genotype-labels (filter (lambda (line) (string-prefix? "@" (string-trim line))) contents)))
-         (data-lines (filter (lambda (line) (not (string-prefix? "@" (string-trim line)))) contents))
-         (header (parse-genotype-header (car data-lines) parlist))
-         (geno-obj (apply hash labels header))
-         (markers (map (lambda (line) (parse-genotype-marker line geno-obj parlist)) (cdr data-lines))))
-    geno-obj))
+"Parse the provided genotype file into a usable Guile data structure."
+(let* ((lines (file->lines filename))
+(lines-without-comments (filter (lambda (line) (not (string-prefix? "#" (string-trim line)))) lines))
+(contents (filter (lambda (line) (not (string=? "" (string-trim line))))) lines-without-comments)
+(labels (parse-genotype-labels (filter (lambda (line) (string-prefix? "@" (string-trim line))) contents)))
+(data-lines (filter (lambda (line) (not (string-prefix? "@" (string-trim line)))) contents))
+(header (parse-genotype-header (car data-lines) parlist))
+(geno-obj (apply hash labels header))
+(markers (map (lambda (line) (parse-genotype-marker line geno-obj parlist)) (cdr data-lines))))
+geno-obj))
 
 
 |#
-
-
-
-
