@@ -1,14 +1,13 @@
-(define-module (genofile-parser))
-
-(use-modules (ice-9 ftw)
-             (ice-9 rdelim)
-             (srfi srfi-1))
 
 ;;util methods
 (define-public (string-starts-with? str prefix)
   (define prefix-length (string-length prefix))
   (and (>= (string-length str) prefix-length)
        (string=? (substring str 0 prefix-length) prefix)))
+(define-module (genofile-parser)
+  #:use-module (ice-9 ftw)
+  #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1))
 
 ;; genofile line parsers
 
