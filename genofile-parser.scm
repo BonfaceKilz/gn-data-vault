@@ -28,12 +28,10 @@
             (cons label value)))))
 
 (define (parse-genotype-labels lines)
-  (define (parse-line line)
-    (parse-label line))
   (apply append
          (map (lambda (item)
                 (if item (list item) '()))
-              (map parse-line lines))))
+              (map (lambda (line) (parse-label line)) lines))))
 
 ;; file readers
 (define-public (read-file-line-by-line filename)
