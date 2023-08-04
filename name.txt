@@ -1,0 +1,6 @@
+this is a test
+second line
+third line
+@name:kabui
+@type:bxd
+#test:name
