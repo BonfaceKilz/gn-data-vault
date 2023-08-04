@@ -3,6 +3,9 @@
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1))
 
+
+(define %label '("name" "filler" "type" "mat" "pat" "het" "unk"))
+
 ;; genofile line parsers
 
 (define-public (genofiles-line-parsers lines parser-type)
@@ -18,15 +21,13 @@
   (let* ((label-value (map string-trim (string-split (substring line 1 (string-length line)) #\:)))
          (label (car label-value))
          (value (cadr label-value)))
-    (if (not (member label '("name" "filler" "type" "mat" "pat" "het" "unk")))
+    (if (not (member label %label))
         #f
         (if (equal? label "name")
             (cons "group" value)
             (cons label value)))))
 
-
 (define (parse-genotype-labels lines)
-  (define acceptable-labels '("name" "filler" "type" "mat" "pat" "het" "unk"))
   (define (parse-line line)
     (parse-label line))
   (apply append
