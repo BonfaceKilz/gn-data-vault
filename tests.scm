@@ -11,7 +11,7 @@
 ;;string starts with
 ;;read-file-line-by-line filename parse-genofile-functio
 (test-equal "test file reading "
-  (list "this is a test" "second line" "third line")
+  (list "this is a test" "second line" "third line" "@name:kabui" "@type:bxd" "#test:name")
   (read-file-line-by-line "name.txt"))
 
 
@@ -48,7 +48,7 @@
 (define  expected-results
   `(("chr" . "chr1")
     ("name" . "Marker1")
-    ("cM" . 12.1)
+    ("cM" . #f)
     ("Mb" . #f)
     ("genotype" "U" "U" "U")))
 
@@ -57,6 +57,6 @@
 				       '()))
 (test-equal "Test parsing genofile markers" expected-results results)
 
-(test-equal "test file reading" (parse-genotype-file "name.txt") '())
+(test-equal "test genofile parsing " (parse-genotype-file "name.txt") (list "this is a test" "second line" "third line" "@name:kabui" "@type:bxd" "#test:name"))
 
 (test-end "genofile parser")
