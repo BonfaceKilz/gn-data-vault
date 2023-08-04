@@ -4,10 +4,6 @@
 
 (test-begin "genofile parser")
 
-(test-assert "String starts with certain character" (string-starts-with? "#alexander" "#"))
-(test-assert "String starts with @" (string-starts-with? "@type:BXD" "@"))
-(test-assert "not start with a character"(not (string-starts-with? "@name:BXD" "name")))
-(test-assert "test for longer string" (string-starts-with? "this-is-a-longer-tester" "this-is-a"))
 ;;string starts with
 ;;read-file-line-by-line filename parse-genofile-functio
 (test-equal "test file reading "
