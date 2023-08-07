@@ -1,4 +1,4 @@
-(define-module (genofile-parser)
+(define-module (vault genofile-parser)
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)

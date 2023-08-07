@@ -1,6 +1,6 @@
 (use-modules (srfi srfi-64)
              (ice-9 hash-table)
-             (genofile-parser ))
+             (vault genofile-parser ))
 
 (test-begin "genofile parser")
 
